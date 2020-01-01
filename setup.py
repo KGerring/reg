@@ -8,13 +8,11 @@ long_description = '\n'.join((
 
 setup(
     name='reg',
-    version='0.12.dev0',
+    version='0.1.0',
     description="Clever dispatch",
-    long_description=long_description,
+    long_description="my own port; don't want to mixup",
     author="Martijn Faassen",
-    author_email="faassen@startifact.com",
     license="BSD",
-    url='http://reg.readthedocs.io',
     packages=find_packages(),
     include_package_data=True,
     zip_safe=False,
