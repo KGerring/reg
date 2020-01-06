@@ -4,6 +4,7 @@ from types import MethodType
 from .dispatch import dispatch, Dispatch, format_signature, execute
 from .arginfo import arginfo
 
+def _invocation(x): print(x)
 
 class dispatch_method(dispatch):
     """Decorator to make a method on a context class dispatch.
@@ -26,12 +27,11 @@ class dispatch_method(dispatch):
     :param first_invocation_hook: a callable that accepts an instance of the
       class in which this decorator is used. It is invoked the first
       time the method is invoked.
-
     """
     def __init__(self, *predicates, **kw):
         self.first_invocation_hook = kw.pop(
-            'first_invocation_hook', lambda x: None)
-        super(dispatch_method, self).__init__(*predicates, **kw)
+            'first_invocation_hook', _invocation)
+        super().__init__(*predicates, **kw)
         self._cache = {}
 
     def __call__(self, callable):

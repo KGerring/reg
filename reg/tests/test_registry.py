@@ -4,6 +4,7 @@ from ..cache import DictCachingKeyLookup, LruCachingKeyLookup
 from ..error import RegistrationError
 from ..dispatch import dispatch
 import pytest
+import inspect
 
 
 def register_value(generic, key, value):
@@ -45,8 +46,8 @@ def test_registry():
     view.add_predicates([
         match_instance('model', get_model, model_fallback),
         match_key('name', get_name, name_fallback),
-        match_key('request_method', get_request_method,
-                  request_method_fallback)])
+        match_key('request_method', get_request_method, request_method_fallback)
+    ])
 
     def foo_default(self, request):
         return "foo default"
@@ -91,7 +92,6 @@ def test_registry():
         Foo(), Request('', 'PUT')) == 'Request method fallback'
     assert view(
         FooSub(), Request('dummy', 'GET')) == 'Name fallback'
-
 
 def test_predicate_registry_class_lookup():
     reg = PredicateRegistry(match_instance('obj'))

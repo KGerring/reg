@@ -1,10 +1,12 @@
 import inspect
 from operator import itemgetter
 from itertools import product
-
+from boltons.setutils import IndexedSet
 from .error import RegistrationError
-
-
+try:
+    from hypothesis.internal.reflection import nicerepr
+except Exception:
+    nicerepr = repr
 class Predicate(object):
     """A dispatch predicate.
 
@@ -38,6 +40,13 @@ class Predicate(object):
 
     def key_by_predicate_name(self, d):
         return d.get(self.name, self.default)
+    def __repr__(self):
+        clsname = type(self).__name__
+        kwarg_items =  ((k, v) for k, v in self.__dict__.items() if v is not None)
+        kw_text = ', '.join(['%s = %s' % (k, nicerepr(v)) for k, v in kwarg_items])
+        argstr = ', '.join([("%s=%s") % ((a, nicerepr(b))) for (a, b) in kwarg_items])
+        return '%s(%s)' % (clsname, kw_text )
+        #return f'{clsname}(name={self.name!r}, get_key={self.get_key!r})'
 
 
 def match_key(name, func=None, fallback=None, default=None):
@@ -58,7 +67,7 @@ def match_key(name, func=None, fallback=None, default=None):
     if func is None:
         get_key = itemgetter(name)
     else:
-        get_key = lambda d: func(**d)
+        def get_key(d): return func(**d)
     return Predicate(name, KeyIndex, get_key, fallback, default)
 
 
@@ -77,9 +86,9 @@ def match_instance(name, func=None, fallback=None, default=None):
 
     """
     if func is None:
-        get_key = lambda d: d[name].__class__
+        def get_key(d): return d[name].__class__
     else:
-        get_key = lambda d: func(**d).__class__
+        def get_key(d): return func(**d).__class__
     return Predicate(name, ClassIndex, get_key, fallback, default)
 
 
@@ -100,7 +109,7 @@ def match_class(name, func=None, fallback=None, default=None):
     if func is None:
         get_key = itemgetter(name)
     else:
-        get_key = lambda d: func(**d)
+        def get_key(d): return func(**d)
     return Predicate(name, ClassIndex, get_key, fallback, default)
 
 
@@ -121,7 +130,6 @@ class KeyIndex(dict):
         """
         yield key
 
-
 class ClassIndex(KeyIndex):
     def permutations(self, key):
         """Permutations for class key.
@@ -135,15 +143,14 @@ class ClassIndex(KeyIndex):
         if class_ is not object:
             yield object  # pragma: no cover
 
-
 class PredicateRegistry(object):
 
     def __init__(self, *predicates):
-        self.known_keys = set()
-        self.known_values = set()
+        self.known_keys = IndexedSet()
+        self.known_values = IndexedSet()
         self.predicates = predicates
         self.indexes = [predicate.create_index() for predicate in predicates]
-        key_getters = [p.get_key for p in predicates]
+        self._key_getters = key_getters = [p.get_key for p in predicates]
         if len(predicates) == 0:
             self.key = lambda **kw: ()
         elif len(predicates) == 1:
@@ -163,7 +170,7 @@ class PredicateRegistry(object):
             raise RegistrationError(
                 "Already have registration for key: %s" % (key,))
         for index, key_item in zip(self.indexes, key):
-            index.setdefault(key_item, set()).add(value)
+            index.setdefault(key_item, IndexedSet()).add(value)
         self.known_keys.add(key)
         self.known_values.add(value)
 

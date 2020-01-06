@@ -5,5 +5,5 @@ from .context import (dispatch_method, DispatchMethod,
 from .arginfo import arginfo
 from .error import RegistrationError
 from .predicate import (Predicate, KeyIndex, ClassIndex,
-                        match_key, match_instance, match_class)
+                        match_key, match_instance, match_class, PredicateRegistry)
 from .cache import DictCachingKeyLookup, LruCachingKeyLookup

@@ -1,7 +1,6 @@
 from __future__ import unicode_literals
 import inspect
 
-
 def arginfo(callable):
     """Get information about the arguments of a callable.
 
@@ -42,16 +41,13 @@ def arginfo(callable):
     arginfo._cache[cache_key] = result
     return result
 
-
 def is_cached(callable):
     if callable in arginfo._cache:
         return True
     return callable.__call__ in arginfo._cache
 
-
 arginfo._cache = {}
 arginfo.is_cached = is_cached
-
 
 def get_callable_info(callable):
     """Get information about a callable.
@@ -81,17 +77,13 @@ def get_callable_info(callable):
     except AttributeError:
         return None, None, False
 
-
 def fake_empty_init():
     pass  # pragma: nocoverage
-
 
 class Dummy(object):
     pass
 
-
 WRAPPER_DESCRIPTOR = Dummy.__init__
-
 
 def get_class_init(class_):
     func = class_.__init__

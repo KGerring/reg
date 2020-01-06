@@ -262,4 +262,8 @@ def execute(code_source, **namespace):
     code_object = compile(
         code_source, '<generated code: {}>'.format(code_source), 'exec')
     exec(code_object, namespace)
+    try:
+        namespace.setdefault('__source__', []).append(code_source[:])
+    except AttributeError:
+        print(f'code source executed for {code_source}')
     return namespace
