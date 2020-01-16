@@ -1,6 +1,9 @@
 from __future__ import unicode_literals
 import inspect
 
+class FullArgSpec(inspect.FullArgSpec): pass
+
+
 def arginfo(callable):
     """Get information about the arguments of a callable.
 

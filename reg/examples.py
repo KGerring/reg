@@ -96,6 +96,79 @@ assert view(
     FooSub(), Request('dummy', 'GET')) == 'Name fallback'
 
 
+##############
+##############
+##############
+
+class DemoClass(object):
+    pass
+
+
+class SpecialClass(object):
+    pass
+
+
+class ClassFoo(object):
+    def __repr__(self):
+        return "<instance of ClassFoo>"
+
+
+class ClassBar(object):
+    def __repr__(self):
+        return "<instance of ClassBar>"
+
+
+#def test_dispatch_basic():
+@reg.dispatch(reg.match_class('cls'))
+def something(cls):
+    raise NotImplementedError()
+
+def something_for_object(cls):
+    return "Something for %s" % cls
+
+something.register(something_for_object, cls=object)
+assert something(DemoClass) == ("Something for <class '{}.DemoClass'>".format(__name__))
+assert something.by_args(DemoClass).component is something_for_object
+assert something.by_args(DemoClass).all_matches == [something_for_object]
+
+
+#def test_classdispatch_multidispatch():
+@reg.dispatch(reg.match_class('cls'), 'other')
+def something(cls, other):
+    raise NotImplementedError()
+
+def something_for_object_and_object(cls, other):
+    return "Something, other is object: %s" % other
+
+def something_for_object_and_foo(cls, other):
+    return "Something, other is ClassFoo: %s" % other
+
+something.register(
+    something_for_object_and_object,
+    cls=object, other=object)
+
+something.register(
+    something_for_object_and_foo,
+    cls=object, other=ClassFoo)
+
+assert something(DemoClass, ClassBar()) == ('Something, other is object: <instance of ClassBar>')
+assert something(DemoClass, ClassFoo()) == ("Something, other is Foo: <instance of ClassFoo>")
+
+############################################################
+
+@reg.dispatch(reg.match_class('cls'))
+def something(cls, extra):
+    raise NotImplementedError()
+
+def something_for_object(cls, extra):
+    return "Extra: %s" % extra
+
+something.register(something_for_object, cls=object)
+assert something(DemoClass, 'foo') == "Extra: foo"
+
+
+
+
 
 
 

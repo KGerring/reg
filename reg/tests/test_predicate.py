@@ -322,7 +322,6 @@ def test_name_request_method_body_model_registered_for_base():
 
     class Bar(Foo):
         pass
-
     m.register(('foo', 'POST', Foo), 'post foo')
 
     assert m.component(('bar', 'GET', object)) is None
