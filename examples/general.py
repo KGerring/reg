@@ -7,7 +7,6 @@ $
 from __future__ import annotations  # isort:skip
 import sys  # isort:skip
 import os  # isort:skip
-from __future__ import annotations
 
 import reg
 
