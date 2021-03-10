@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import pytest
 from ..arginfo import arginfo
 
@@ -68,15 +70,24 @@ class ClassicInheritedNoArgs(ClassicNoArgs):
     pass
 
 
-@pytest.mark.parametrize("callable", [func_no_args, obj_no_args,
-                                      method_no_args.method,
-                                      StaticMethodNoArgs.method,
-                                      ClassMethodNoArgs.method,
-                                      ClassNoInit, ClassNoArgs,
-                                      ClassicNoInit, ClassicNoArgs,
-                                      InheritedNoInit, InheritedNoArgs,
-                                      ClassicInheritedNoInit,
-                                      ClassicInheritedNoArgs])
+@pytest.mark.parametrize(
+    "callable",
+    [
+        func_no_args,
+        obj_no_args,
+        method_no_args.method,
+        StaticMethodNoArgs.method,
+        ClassMethodNoArgs.method,
+        ClassNoInit,
+        ClassNoArgs,
+        ClassicNoInit,
+        ClassicNoArgs,
+        InheritedNoInit,
+        InheritedNoArgs,
+        ClassicInheritedNoInit,
+        ClassicInheritedNoArgs,
+    ],
+)
 def test_arginfo_no_args(callable):
     info = arginfo(callable)
     assert info.args == []
@@ -135,14 +146,10 @@ class ClassicInheritedArgs(ClassicArgs):
     pass
 
 
-@pytest.mark.parametrize("callable", [func_args, obj_args, method_args.method,
-                                      StaticMethodArgs.method,
-                                      ClassMethodArgs.method,
-                                      ClassArgs, ClassicArgs, InheritedArgs,
-                                      ClassicInheritedArgs])
+@pytest.mark.parametrize("callable", [func_args, obj_args, method_args.method, StaticMethodArgs.method, ClassMethodArgs.method, ClassArgs, ClassicArgs, InheritedArgs, ClassicInheritedArgs])
 def test_arginfo_args(callable):
     info = arginfo(callable)
-    assert info.args == ['a']
+    assert info.args == ["a"]
     assert info.varargs is None
     assert info.varkw is None
     assert info.defaults is None
@@ -186,15 +193,11 @@ class ClassicInheritedVarargs(ClassicVarargs):
     pass
 
 
-@pytest.mark.parametrize("callable", [func_varargs, obj_varargs,
-                                      method_varargs.method,
-                                      ClassVarargs, ClassicVarargs,
-                                      InheritedVarargs,
-                                      ClassicInheritedVarargs])
+@pytest.mark.parametrize("callable", [func_varargs, obj_varargs, method_varargs.method, ClassVarargs, ClassicVarargs, InheritedVarargs, ClassicInheritedVarargs])
 def test_arginfo_varargs(callable):
     info = arginfo(callable)
     assert info.args == []
-    assert info.varargs == 'args'
+    assert info.varargs == "args"
     assert info.varkw is None
     assert info.defaults is None
 
@@ -237,16 +240,12 @@ class ClassicInheritedKeywords(ClassicKeywords):
     pass
 
 
-@pytest.mark.parametrize("callable", [func_keywords, obj_keywords,
-                                      method_keywords.method,
-                                      ClassKeywords, ClassicKeywords,
-                                      InheritedKeywords,
-                                      ClassicInheritedKeywords])
+@pytest.mark.parametrize("callable", [func_keywords, obj_keywords, method_keywords.method, ClassKeywords, ClassicKeywords, InheritedKeywords, ClassicInheritedKeywords])
 def test_arginfo_keywords(callable):
     info = arginfo(callable)
     assert info.args == []
     assert info.varargs is None
-    assert info.varkw == 'kw'
+    assert info.varkw == "kw"
     assert info.defaults is None
 
 
@@ -288,14 +287,10 @@ class ClassicInheritedDefaults(ClassicDefaults):
     pass
 
 
-@pytest.mark.parametrize("callable", [func_defaults, obj_defaults,
-                                      method_defaults.method,
-                                      ClassDefaults, ClassicDefaults,
-                                      InheritedDefaults,
-                                      ClassicInheritedDefaults])
+@pytest.mark.parametrize("callable", [func_defaults, obj_defaults, method_defaults.method, ClassDefaults, ClassicDefaults, InheritedDefaults, ClassicInheritedDefaults])
 def test_arginfo_defaults(callable):
     info = arginfo(callable)
-    assert info.args == ['a']
+    assert info.args == ["a"]
     assert info.varargs is None
     assert info.varkw is None
     assert info.defaults == (1,)

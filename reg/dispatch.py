@@ -1,10 +1,13 @@
+from __future__ import annotations
 from __future__ import unicode_literals
-from functools import partial, wraps
-from collections import namedtuple
-from .predicate import match_instance
-from .predicate import PredicateRegistry
+
 from .arginfo import arginfo
 from .error import RegistrationError
+from .predicate import PredicateRegistry
+from .predicate import match_instance
+from collections import namedtuple
+from functools import partial
+from functools import wraps
 
 
 class dispatch(object):
@@ -29,10 +32,10 @@ class dispatch(object):
       :class:`reg.Dispatch` instance.
 
     """
+
     def __init__(self, *predicates, **kw):
-        self.predicates = [self._make_predicate(predicate)
-                           for predicate in predicates]
-        self.get_key_lookup = kw.pop('get_key_lookup', identity)
+        self.predicates = [self._make_predicate(predicate) for predicate in predicates]
+        self.get_key_lookup = kw.pop("get_key_lookup", identity)
 
     def _make_predicate(self, predicate):
         if isinstance(predicate, str):
@@ -47,8 +50,7 @@ def identity(registry):
     return registry
 
 
-class LookupEntry(
-        namedtuple('LookupEntry', 'lookup key')):
+class LookupEntry(namedtuple("LookupEntry", "lookup key")):
     """The dispatch data associated to a key."""
 
     __slots__ = ()
@@ -93,6 +95,7 @@ class Dispatch(object):
       :class:`reg.DictCachingKeyLookup` or
       :class:`reg.LruCachingKeyLookup`) to make it more efficient.
     """
+
     def __init__(self, predicates, callable, get_key_lookup):
         self.wrapped_func = callable
         self.get_key_lookup = get_key_lookup
@@ -103,8 +106,7 @@ class Dispatch(object):
     def _register_predicates(self, predicates):
         self.registry = PredicateRegistry(*predicates)
         self.predicates = predicates
-        self.call.key_lookup = self.key_lookup = \
-            self.get_key_lookup(self.registry)
+        self.call.key_lookup = self.key_lookup = self.get_key_lookup(self.registry)
         self.call.__globals__.update(
             _registry_key=self.registry.key,
             _component_lookup=self.key_lookup.component,
@@ -130,35 +132,27 @@ def call({signature}):
 
         args = arginfo(self.wrapped_func)
         signature = format_signature(args)
-        predicate_args = ', '.join('{0}={0}'.format(x) for x in args.args)
-        code_source = code_template.format(
-            signature=signature,
-            predicate_args=predicate_args)
+        predicate_args = ", ".join("{0}={0}".format(x) for x in args.args)
+        code_source = code_template.format(signature=signature, predicate_args=predicate_args)
 
         # We now compile call to byte-code:
-        self.call = call = wraps(self.wrapped_func)(execute(
-            code_source,
-            _registry_key=None,
-            _component_lookup=None,
-            _fallback_lookup=None,
-            _fallback=self.wrapped_func)['call'])
+        self.call = call = wraps(self.wrapped_func)(execute(code_source, _registry_key=None, _component_lookup=None, _fallback_lookup=None, _fallback=self.wrapped_func)["call"])
 
         # We copy over the defaults from the wrapped function.
         call.__defaults__ = args.defaults
 
         # Make the methods available as attributes of call
         for k in dir(type(self)):
-            if not k.startswith('_'):
+            if not k.startswith("_"):
                 setattr(call, k, getattr(self, k))
         call.wrapped_func = self.wrapped_func
 
         # We now build the implementation for the predicate_key method
         self._predicate_key = execute(
-            "def predicate_key({signature}):\n"
-            "    return _return_type(_registry_key({predicate_args}))".format(
-                signature=format_signature(args),
-                predicate_args=predicate_args),
-            _registry_key=None, _return_type=None)['predicate_key']
+            "def predicate_key({signature}):\n" "    return _return_type(_registry_key({predicate_args}))".format(signature=format_signature(args), predicate_args=predicate_args),
+            _registry_key=None,
+            _return_type=None,
+        )["predicate_key"]
 
     def clean(self):
         """Clean up implementations and added predicates.
@@ -219,29 +213,19 @@ def call({signature}):
         :param predicate_values: the values of the predicates to lookup.
         :returns: a :class:`reg.LookupEntry`.
         """
-        return LookupEntry(
-            self.key_lookup,
-            self.registry.key_dict_to_predicate_key(predicate_values))
+        return LookupEntry(self.key_lookup, self.registry.key_dict_to_predicate_key(predicate_values))
 
 
 def validate_signature(f, dispatch):
     f_arginfo = arginfo(f)
     if f_arginfo is None:
-        raise RegistrationError(
-            "Cannot register non-callable for dispatch "
-            "%r: %r" % (dispatch, f))
+        raise RegistrationError("Cannot register non-callable for dispatch " "%r: %r" % (dispatch, f))
     if not same_signature(arginfo(dispatch), f_arginfo):
-        raise RegistrationError(
-            "Signature of callable dispatched to (%r) "
-            "not that of dispatch (%r)" % (
-                f, dispatch))
+        raise RegistrationError("Signature of callable dispatched to (%r) " "not that of dispatch (%r)" % (f, dispatch))
 
 
 def format_signature(args):
-    return ', '.join(
-        args.args
-        + (['*' + args.varargs] if args.varargs else [])
-        + (['**' + args.varkw] if args.varkw else []))
+    return ", ".join(args.args + (["*" + args.varargs] if args.varargs else []) + (["**" + args.varkw] if args.varkw else []))
 
 
 def same_signature(a, b):
@@ -252,18 +236,15 @@ def same_signature(a, b):
     """
     a_args = set(a.args)
     b_args = set(b.args)
-    return (len(a_args) == len(b_args)
-            and a.varargs == b.varargs
-            and a.varkw == b.varkw)
+    return len(a_args) == len(b_args) and a.varargs == b.varargs and a.varkw == b.varkw
 
 
 def execute(code_source, **namespace):
     """Execute code in a namespace, returning the namespace."""
-    code_object = compile(
-        code_source, '<generated code: {}>'.format(code_source), 'exec')
+    code_object = compile(code_source, "<generated code: {}>".format(code_source), "exec")
     exec(code_object, namespace)
     try:
-        namespace.setdefault('__source__', []).append(code_source[:])
+        namespace.setdefault("__source__", []).append(code_source[:])
     except AttributeError:
-        print(f'code source executed for {code_source}')
+        print(f"code source executed for {code_source}")
     return namespace

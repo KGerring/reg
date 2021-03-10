@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from repoze.lru import lru_cache
 
 
@@ -10,6 +12,7 @@ class Cache(dict):
     def __missing__(self, key):
         self[key] = result = self.func(key)
         return result
+
 
 class DictCachingKeyLookup(object):
     """A key lookup that caches.
@@ -26,11 +29,13 @@ class DictCachingKeyLookup(object):
     :param: key_lookup - the :class:`PredicateRegistry` to cache.
 
     """
-    def __init__(self, key_lookup: 'reg.PredicateRegistry'):
+
+    def __init__(self, key_lookup: "reg.PredicateRegistry"):
         self.key_lookup = key_lookup
         self.component = Cache(key_lookup.component).__getitem__
         self.fallback = Cache(key_lookup.fallback).__getitem__
         self.all = Cache(lambda key: list(key_lookup.all(key))).__getitem__
+
 
 class LruCachingKeyLookup(object):
     """A key lookup that caches.
@@ -51,10 +56,9 @@ class LruCachingKeyLookup(object):
     :param fallback_cache_size: how many cache entries to store for
       the :meth:`fallback` method.
     """
-    def __init__(self, key_lookup, component_cache_size = 20, all_cache_size = 20,
-                 fallback_cache_size = 20):
+
+    def __init__(self, key_lookup, component_cache_size=20, all_cache_size=20, fallback_cache_size=20):
         self.key_lookup = key_lookup
         self.component = lru_cache(component_cache_size)(key_lookup.component)
         self.fallback = lru_cache(fallback_cache_size)(key_lookup.fallback)
-        self.all = lru_cache(all_cache_size)(
-            lambda key: list(key_lookup.all(key)))
+        self.all = lru_cache(all_cache_size)(lambda key: list(key_lookup.all(key)))

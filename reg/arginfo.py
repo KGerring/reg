@@ -1,7 +1,11 @@
+from __future__ import annotations
 from __future__ import unicode_literals
+
 import inspect
 
-class FullArgSpec(inspect.FullArgSpec): pass
+
+class FullArgSpec(inspect.FullArgSpec):
+    pass
 
 
 def arginfo(callable):
@@ -38,19 +42,20 @@ def arginfo(callable):
     result = inspect.getfullargspec(func)
     if remove_self:
         args = result.args[1:]
-        result = inspect.FullArgSpec(args, result.varargs, result.varkw,
-                                     result.defaults, result.kwonlyargs,
-                                     result.kwonlydefaults, result.annotations)
+        result = inspect.FullArgSpec(args, result.varargs, result.varkw, result.defaults, result.kwonlyargs, result.kwonlydefaults, result.annotations)
     arginfo._cache[cache_key] = result
     return result
+
 
 def is_cached(callable):
     if callable in arginfo._cache:
         return True
     return callable.__call__ in arginfo._cache
 
+
 arginfo._cache = {}
 arginfo.is_cached = is_cached
+
 
 def get_callable_info(callable):
     """Get information about a callable.
@@ -75,18 +80,22 @@ def get_callable_info(callable):
     if inspect.isclass(callable):
         return get_class_init(callable), callable, True
     try:
-        callable = getattr(callable, '__call__')
+        callable = getattr(callable, "__call__")
         return callable, callable, True
     except AttributeError:
         return None, None, False
 
+
 def fake_empty_init():
     pass  # pragma: nocoverage
+
 
 class Dummy(object):
     pass
 
+
 WRAPPER_DESCRIPTOR = Dummy.__init__
+
 
 def get_class_init(class_):
     func = class_.__init__

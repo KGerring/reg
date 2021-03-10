@@ -1,10 +1,18 @@
+from __future__ import annotations
 from __future__ import unicode_literals
-import inspect
-from types import MethodType
-from .dispatch import dispatch, Dispatch, format_signature, execute
-from .arginfo import arginfo
 
-def _invocation(x): print(x)
+import inspect
+from .arginfo import arginfo
+from .dispatch import Dispatch
+from .dispatch import dispatch
+from .dispatch import execute
+from .dispatch import format_signature
+from types import MethodType
+
+
+def _invocation(x):
+    print(x)
+
 
 class dispatch_method(dispatch):
     """Decorator to make a method on a context class dispatch.
@@ -28,9 +36,9 @@ class dispatch_method(dispatch):
       class in which this decorator is used. It is invoked the first
       time the method is invoked.
     """
+
     def __init__(self, *predicates, **kw):
-        self.first_invocation_hook = kw.pop(
-            'first_invocation_hook', _invocation)
+        self.first_invocation_hook = kw.pop("first_invocation_hook", _invocation)
         super().__init__(*predicates, **kw)
         self._cache = {}
 
@@ -48,9 +56,7 @@ class dispatch_method(dispatch):
         if dispatch is None:
             # if this is the first time we access the dispatch method,
             # we create it and store it in the cache
-            dispatch = DispatchMethod(self.predicates,
-                                      self.callable,
-                                      self.get_key_lookup).call
+            dispatch = DispatchMethod(self.predicates, self.callable, self.get_key_lookup).call
             self._cache[type] = dispatch
 
         # we cannot attach the dispatch method to the class
@@ -73,7 +79,6 @@ class dispatch_method(dispatch):
 
 
 class DispatchMethod(Dispatch):
-
     def by_args(self, *args, **kw):
         """Lookup an implementation by invocation arguments.
 
@@ -115,19 +120,15 @@ def methodify(func, selfname=None):
         raise TypeError("methodify must take a callable")
     if args.args[:1] != [selfname]:
         # Add missing self to the signature:
-        code_template = (
-            "def wrapper({selfname}, {signature}): return _func({signature})")
+        code_template = "def wrapper({selfname}, {signature}): return _func({signature})"
     elif inspect.ismethod(func):
         # Bound method: must be wrapped despite same signature:
-        code_template = (
-            "def wrapper({signature}): return _func({signature})")
+        code_template = "def wrapper({signature}): return _func({signature})"
     else:
         # No wrapping needed:
         return func
-    code_source = code_template.format(
-        signature=format_signature(args),
-        selfname=selfname or '_')
-    return execute(code_source, _func=func)['wrapper']
+    code_source = code_template.format(signature=format_signature(args), selfname=selfname or "_")
+    return execute(code_source, _func=func)["wrapper"]
 
 
 def clean_dispatch_methods(cls):
@@ -140,5 +141,5 @@ def clean_dispatch_methods(cls):
     """
     for name in dir(cls):
         attr = getattr(cls, name)
-        if inspect.isfunction(attr) and hasattr(attr, 'clean'):
+        if inspect.isfunction(attr) and hasattr(attr, "clean"):
             attr.clean()

@@ -1,14 +1,18 @@
 # thirdparty
-
-__VERBOSE__ = True
+from __future__ import annotations
 
 import reg
 from reg import methodify
 
+__VERBOSE__ = True
+
+
 if __VERBOSE__:
     from ansimarkup import ansiprint
 else:
-    def ansiprint(*args, **kwargs): return
+
+    def ansiprint(*args, **kwargs):
+        return
 
 
 def cprint(result):
@@ -16,13 +20,16 @@ def cprint(result):
         return
     else:
         from ansimarkup import ansiprint
-        ansiprint(f'res:<c>\t{result!r}</c>')
+
+        ansiprint(f"res:<c>\t{result!r}</c>")
+
 
 def vprint(s):
     if not __VERBOSE__:
         return
     else:
         print(s)
+
 
 class Document(object):
     def __init__(self, text):
@@ -199,7 +206,7 @@ image = Image("abc")
 htmldoc = HtmlDocument("abc")
 
 
-ansiprint('<C><k> testing view functions</k></C>')
+ansiprint("<C><k> testing view functions</k></C>")
 vprint("""view(doc, Request('GET'))""")
 res = view(_doc, Request("GET"))
 cprint(res)
@@ -207,16 +214,16 @@ cprint(res)
 res = view(_doc, Request("POST", "New content"))
 vprint("""view(doc, Request('POST', 'New content'))""")
 cprint(res)
-ansiprint('<g>#######################</g>')
+ansiprint("<g>#######################</g>")
 vprint("""doc.text""")
 _doc.text
 ansiprint(f"<b>result: {doc.text}</b>")
 
-#u; \x1b[34ma\x1b[0m
-#\x1b[34;4m{}\x1b[0m
+# u; \x1b[34ma\x1b[0m
+# \x1b[34;4m{}\x1b[0m
 
-#print('\x1b[106;30m{}\x1b[0m')
-ansiprint('<g>#######################</g>')
+# print('\x1b[106;30m{}\x1b[0m')
+ansiprint("<g>#######################</g>")
 
 vprint("""view(image, Request('GET'))""")
 res = view(image, Request("GET"))
@@ -227,7 +234,7 @@ vprint("""view(image, Request('POST', "new data"))""")
 cprint(res)
 
 
-ansiprint('<C><k> showing its the same etc; ln 209 </k></C>')
+ansiprint("<C><k> showing its the same etc; ln 209 </k></C>")
 vprint("""image.bytes""")
 ansiprint(f"<red>result: {image.bytes!r}</red>")
 image.bytes
@@ -241,9 +248,7 @@ class CMS(object):
 
     @reg.dispatch_method(
         reg.match_instance("obj"),
-        reg.match_key(
-            "request_method", lambda self, obj, request: request.request_method
-        ),
+        reg.match_key("request_method", lambda self, obj, request: request.request_method),
     )
     def view(self, obj, request):
         return "Generic content of {} bytes.".format(self.size(obj))
@@ -261,7 +266,7 @@ CMS.size.register(methodify(folder_size), item=Folder)
 CMS.size.register(methodify(image_size), item=Image)
 CMS.size.register(methodify(file_size), item=File)
 
-ansiprint('<b> testing `cms=CMS()` example <b>')
+ansiprint("<b> testing `cms=CMS()` example <b>")
 
 cms = CMS()
 vprint("""cms.size(Image("123"))""")
@@ -278,14 +283,17 @@ cprint(res)
 def document_get(self, obj, request):
     return "{}-byte-long text is: {}".format(self.size(obj), obj.text)
 
-ansiprint('<C><k> testing cms.view.register stuff </k></C>')
+
+ansiprint("<C><k> testing cms.view.register stuff </k></C>")
 
 res0 = cms.view(Document("12345"), Request("GET"))
 res1 = cms.view(Image("123"), Request("GET"))
-vprint("""
+vprint(
+    """
 cms.view(Document("12345"), Request("GET"))
 cms.view(Image("123"), Request("GET"))
-""")
+"""
+)
 cprint(res0)
 cprint(res1)
 
@@ -313,56 +321,68 @@ size.by_args(htmldoc).all_matches
 #### Service Discovery https://reg.readthedocs.io/en/latest/patterns.html#service-discovery
 # Here we’ve created a generic function that takes no arguments (and thus does no dynamic dispatch). But you can still plug its actual implementation into the registry from elsewhere:
 
+
 @reg.dispatch()
 def emailer():
     raise NotImplementedError
 
+
 sent = []
+
 
 def send_email(sender, subject, body):
     # some specific way to send email
     sent.append((sender, subject, body))
 
+
 def actual_emailer():
     return send_email
 
+
 emailer.register(actual_emailer)
 the_emailer = emailer()
-the_emailer('someone@example.com', 'Hello', 'hello world!')
+the_emailer("someone@example.com", "Hello", "hello world!")
 
 
 #####
 
-@reg.dispatch(reg.match_class('cls'))
+
+@reg.dispatch(reg.match_class("cls"))
 def something(cls):
     raise NotImplementedError()
 
+
 def something_for_object(cls):
     return "Something for %s" % cls
+
+
 something.register(something_for_object, cls=object)
+
 
 class DemoClass(object):
     pass
 
+
 class ParticularClass(DemoClass):
     pass
+
+
 def something_particular(cls):
     return "Particular for %s" % cls
 
-something.register(
-    something_particular,
-    cls=ParticularClass)
 
-REGISTERED = ['emailer', 'size', 'something', 'view', 'CMS']
+something.register(something_particular, cls=ParticularClass)
 
-def get_caller_module_dict(levels = 1):
+REGISTERED = ["emailer", "size", "something", "view", "CMS"]
+
+
+def get_caller_module_dict(levels=1):
     f = sys._getframe(levels)
     ldict = f.f_globals.copy()
     if f.f_globals != f.f_locals:
         ldict.update(f.f_locals)
     return ldict
 
-import reg
 
 def register_value(generic, key, value):
     """Low-level function that directly uses the internal registry of the
@@ -370,90 +390,96 @@ def register_value(generic, key, value):
     """
     generic.register.__self__.registry.register(key, value)
 
+
 class Foo(object):
     pass
 
+
 class FooSub(Foo):
     pass
+
 
 @reg.dispatch()
 def view(self, request):
     raise NotImplementedError()
 
+
 def get_model(self, request):
     return self
+
 
 def get_name(self, request):
     return request.name
 
+
 def get_request_method(self, request):
     return request.request_method
+
 
 def model_fallback(self, request):
     return "Model fallback"
 
+
 def name_fallback(self, request):
     return "Name fallback"
+
 
 def request_method_fallback(self, request):
     return "Request method fallback"
 
-view.add_predicates([
-    reg.match_instance('model', get_model, model_fallback),
-    reg.match_key('name', get_name, name_fallback),
-    reg.match_key('request_method', get_request_method, request_method_fallback)
-])
+
+view.add_predicates(
+    [reg.match_instance("model", get_model, model_fallback), reg.match_key("name", get_name, name_fallback), reg.match_key("request_method", get_request_method, request_method_fallback)]
+)
+
 
 def foo_default(self, request):
     return "foo default"
 
+
 def foo_post(self, request):
     return "foo default post"
+
 
 def foo_edit(self, request):
     return "foo edit"
 
-register_value(view, (Foo, '', 'GET'), foo_default)
-register_value(view, (Foo, '', 'POST'), foo_post)
-register_value(view, (Foo, 'edit', 'POST'), foo_edit)
+
+register_value(view, (Foo, "", "GET"), foo_default)
+register_value(view, (Foo, "", "POST"), foo_post)
+register_value(view, (Foo, "edit", "POST"), foo_edit)
 
 key_lookup = view.key_lookup
-assert key_lookup.component((Foo, '', 'GET')) is foo_default
-assert key_lookup.component((Foo, '', 'POST')) is foo_post
-assert key_lookup.component((Foo, 'edit', 'POST')) is foo_edit
-assert key_lookup.component((FooSub, '', 'GET')) is foo_default
-assert key_lookup.component((FooSub, '', 'POST')) is foo_post
+assert key_lookup.component((Foo, "", "GET")) is foo_default
+assert key_lookup.component((Foo, "", "POST")) is foo_post
+assert key_lookup.component((Foo, "edit", "POST")) is foo_edit
+assert key_lookup.component((FooSub, "", "GET")) is foo_default
+assert key_lookup.component((FooSub, "", "POST")) is foo_post
+
 
 class Request(object):
     def __init__(self, name, request_method):
         self.name = name
         self.request_method = request_method
 
-assert view(
-    Foo(), Request('', 'GET')) == 'foo default'
-assert view(
-    FooSub(), Request('', 'GET')) == 'foo default'
-assert view(
-    FooSub(), Request('edit', 'POST')) == 'foo edit'
+
+assert view(Foo(), Request("", "GET")) == "foo default"
+assert view(FooSub(), Request("", "GET")) == "foo default"
+assert view(FooSub(), Request("edit", "POST")) == "foo edit"
+
 
 class Bar(object):
     pass
 
-assert view(
-    Bar(), Request('', 'GET')) == 'Model fallback'
-assert view(
-    Foo(), Request('dummy', 'GET')) == 'Name fallback'
-assert view(
-    Foo(), Request('', 'PUT')) == 'Request method fallback'
-assert view(
-    FooSub(), Request('dummy', 'GET')) == 'Name fallback'
+
+assert view(Bar(), Request("", "GET")) == "Model fallback"
+assert view(Foo(), Request("dummy", "GET")) == "Name fallback"
+assert view(Foo(), Request("", "PUT")) == "Request method fallback"
+assert view(FooSub(), Request("dummy", "GET")) == "Name fallback"
+
 
 def get_caching_key_lookup(r):
     return reg.DictCachingKeyLookup(r)
-
-
-
-
 
 
 if __name__ == "__main__":

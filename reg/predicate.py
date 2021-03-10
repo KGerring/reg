@@ -1,12 +1,17 @@
+from __future__ import annotations
+
 import inspect
-from operator import itemgetter
-from itertools import product
-from boltons.setutils import IndexedSet
 from .error import RegistrationError
+from boltons.setutils import IndexedSet
+from itertools import product
+from operator import itemgetter
+
 try:
     from hypothesis.internal.reflection import nicerepr
 except Exception:
     nicerepr = repr
+
+
 class Predicate(object):
     """A dispatch predicate.
 
@@ -27,8 +32,7 @@ class Predicate(object):
 
     """
 
-    def __init__(self, name, index, get_key=None, fallback=None,
-                 default=None):
+    def __init__(self, name, index, get_key=None, fallback=None, default=None):
         self.name = name
         self.index = index
         self.fallback = fallback
@@ -40,13 +44,14 @@ class Predicate(object):
 
     def key_by_predicate_name(self, d):
         return d.get(self.name, self.default)
+
     def __repr__(self):
         clsname = type(self).__name__
-        kwarg_items =  ((k, v) for k, v in self.__dict__.items() if v is not None)
-        kw_text = ', '.join(['%s = %s' % (k, nicerepr(v)) for k, v in kwarg_items])
-        argstr = ', '.join([("%s=%s") % ((a, nicerepr(b))) for (a, b) in kwarg_items])
-        return '%s(%s)' % (clsname, kw_text )
-        #return f'{clsname}(name={self.name!r}, get_key={self.get_key!r})'
+        kwarg_items = ((k, v) for k, v in self.__dict__.items() if v is not None)
+        kw_text = ", ".join(["%s = %s" % (k, nicerepr(v)) for k, v in kwarg_items])
+        argstr = ", ".join([("%s=%s") % ((a, nicerepr(b))) for (a, b) in kwarg_items])
+        return "%s(%s)" % (clsname, kw_text)
+        # return f'{clsname}(name={self.name!r}, get_key={self.get_key!r})'
 
 
 def match_key(name, func=None, fallback=None, default=None):
@@ -67,7 +72,10 @@ def match_key(name, func=None, fallback=None, default=None):
     if func is None:
         get_key = itemgetter(name)
     else:
-        def get_key(d): return func(**d)
+
+        def get_key(d):
+            return func(**d)
+
     return Predicate(name, KeyIndex, get_key, fallback, default)
 
 
@@ -86,9 +94,15 @@ def match_instance(name, func=None, fallback=None, default=None):
 
     """
     if func is None:
-        def get_key(d): return d[name].__class__
+
+        def get_key(d):
+            return d[name].__class__
+
     else:
-        def get_key(d): return func(**d).__class__
+
+        def get_key(d):
+            return func(**d).__class__
+
     return Predicate(name, ClassIndex, get_key, fallback, default)
 
 
@@ -109,7 +123,10 @@ def match_class(name, func=None, fallback=None, default=None):
     if func is None:
         get_key = itemgetter(name)
     else:
-        def get_key(d): return func(**d)
+
+        def get_key(d):
+            return func(**d)
+
     return Predicate(name, ClassIndex, get_key, fallback, default)
 
 
@@ -130,6 +147,7 @@ class KeyIndex(dict):
         """
         yield key
 
+
 class ClassIndex(KeyIndex):
     def permutations(self, key):
         """Permutations for class key.
@@ -143,8 +161,8 @@ class ClassIndex(KeyIndex):
         if class_ is not object:
             yield object  # pragma: no cover
 
-class PredicateRegistry(object):
 
+class PredicateRegistry(object):
     def __init__(self, *predicates):
         self.known_keys = IndexedSet()
         self.known_values = IndexedSet()
@@ -154,7 +172,7 @@ class PredicateRegistry(object):
         if len(predicates) == 0:
             self.key = lambda **kw: ()
         elif len(predicates) == 1:
-            p, = key_getters
+            (p,) = key_getters
             self.key = lambda **kw: (p(kw),)
         elif len(predicates) == 2:
             p, q = key_getters
@@ -167,8 +185,7 @@ class PredicateRegistry(object):
 
     def register(self, key, value):
         if key in self.known_keys:
-            raise RegistrationError(
-                "Already have registration for key: %s" % (key,))
+            raise RegistrationError("Already have registration for key: %s" % (key,))
         for index, key_item in zip(self.indexes, key):
             index.setdefault(key_item, IndexedSet()).add(value)
         self.known_keys.add(key)
@@ -177,16 +194,13 @@ class PredicateRegistry(object):
     def get(self, keys):
         # do an intersection of all sets that result from index lookup
         # this code is a bit convoluted for performance reasons.
-        sets = (
-            index[key] for index, key in zip(self.indexes, keys))
+        sets = (index[key] for index, key in zip(self.indexes, keys))
         # besides doing the intersection,
         # this returns the known values if there are no indexes at all
         return next(sets, self.known_values).intersection(*sets)
 
     def permutations(self, keys):
-        return product(*(
-            index.permutations(key) for index, key in zip(self.indexes, keys)
-        ))
+        return product(*(index.permutations(key) for index, key in zip(self.indexes, keys)))
 
     def key(self, **kw):
         """Construct a dispatch key from the arguments of a generic function.
