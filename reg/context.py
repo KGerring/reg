@@ -13,7 +13,6 @@ from types import MethodType
 def _invocation(x):
     print(x)
 
-
 class dispatch_method(dispatch):
     """Decorator to make a method on a context class dispatch.
 
@@ -76,7 +75,6 @@ class dispatch_method(dispatch):
         # but return the bound dispatch function directly
         setattr(obj, self.callable.__name__, bound)
         return bound
-
 
 class DispatchMethod(Dispatch):
     def by_args(self, *args, **kw):

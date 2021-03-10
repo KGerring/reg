@@ -3,10 +3,8 @@ from __future__ import unicode_literals
 
 import inspect
 
-
 class FullArgSpec(inspect.FullArgSpec):
     pass
-
 
 def arginfo(callable):
     """Get information about the arguments of a callable.
@@ -46,12 +44,10 @@ def arginfo(callable):
     arginfo._cache[cache_key] = result
     return result
 
-
 def is_cached(callable):
     if callable in arginfo._cache:
         return True
     return callable.__call__ in arginfo._cache
-
 
 arginfo._cache = {}
 arginfo.is_cached = is_cached
