@@ -4,7 +4,7 @@ import pydoc
 from .fixtures.module import Foo
 from .fixtures.module import foo
 from sphinx.application import Sphinx
-
+from textwrap import dedent
 
 def rstrip_lines(s):
     "Delete trailing spaces from each line in s."
@@ -74,17 +74,17 @@ foo(obj)
 
 def test_autodoc(tmpdir):
     root = str(tmpdir)
-    tmpdir.join("conf.py").write("extensions = ['sphinx.ext.autodoc']\n")
+    tmpdir.join("conf.py").write("extensions = ['sphinx.ext.autodoc']\nmaster_doc = 'contents'")
     tmpdir.join("contents.rst").write(".. automodule:: reg.tests.fixtures.module\n" "  :members:\n")
     # status=None makes Sphinx completely quiet, in case you run
     # py.test with the -s switch.  For debugging you might want to
     # remove it.
     app = Sphinx(root, root, root + "/build", root, "text", status=None)
     app.build()
-    assert (
-        tmpdir.join("build/contents.txt").read()
-        == """\
-Sample module for testing autodoc.
+    left = dedent(tmpdir.join("build/contents.txt").read())
+    assert left
+    assert "reg.tests.fixtures.module.foo(obj)" in left
+    right = dedent("""\
 
 class reg.tests.fixtures.module.Foo
 
@@ -101,5 +101,4 @@ class reg.tests.fixtures.module.Foo
 reg.tests.fixtures.module.foo(obj)
 
    return the foo of an object.
-"""
-    )
+""")

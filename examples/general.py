@@ -12,10 +12,6 @@ from __future__ import annotations
 import reg
 
 
-def __getattr__(name):
-    raise AttributeError(f"CONFIGURE THIS for {__name__}")
-
-
 def register_value(generic, key, value):
     """Low-level function that directly uses the internal registry of the
     generic function to register an implementation.
